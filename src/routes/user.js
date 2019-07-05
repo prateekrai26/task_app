@@ -51,7 +51,7 @@ router.post("/users/create",async(req,res)=>
          const user =await new User(req.body);
          const token=await user.generateToken(user);
          Emails.sendWelcomeEmail(user.email,user.name)
-         res.send(user)
+         res.send({user,token})
       }
     catch(e)
     {
@@ -66,7 +66,7 @@ router.post("/users/login",async (req,res)=>
     {
     const user=await User.findByCredentials(req.body.email,req.body.password);
     const token=await user.generateToken();
-    res.send(user)
+    res.send({user,token})
     }
     catch(e)
     {
