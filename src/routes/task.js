@@ -38,7 +38,7 @@ router.get("/users/tasks", auth,async (req,res)=>
     }
     catch(e)
     {
-        console.log(e);
+        res.send("Error Occured")
     }
 })
 
@@ -78,7 +78,7 @@ router.get("/users/tasks/delete/:id",auth,async (req,res)=>
     }
   catch(e)
   {
-      console.log(e)
+    res.send("Error Occured")
   }
 })
 
@@ -96,7 +96,7 @@ router.post("/users/tasks/create",auth,async(req,res)=>
     }
     catch(e)
     {
-        console.log(e);
+        res.send("Error Occured")
         return;
     }
 
@@ -130,7 +130,7 @@ router.post("/users/tasks/update/:id",auth,async (req,res)=>
     }
     catch(e)
     {
-        console.log(e);
+        res.send("Error Occured")
         return;
     }
 

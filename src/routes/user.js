@@ -24,7 +24,7 @@ router.get("/users/me",auth,async (req,res)=>
   }
   catch(e)
   {
-      console.log(e)
+    res.send("Error Occured")
   }
 })
 
@@ -39,7 +39,7 @@ router.get("/users/me",auth,async (req,res)=>
  })
  router.post("/users/logout",auth,async (req,res)=>
  {
-     console.log("GHekjrioe")
+    
      try
      {
    
@@ -53,7 +53,7 @@ router.get("/users/me",auth,async (req,res)=>
      }
      catch(e)
      {
-      console.log(e);
+      res.send("Error Occured")
      }
  })
  
@@ -84,7 +84,7 @@ router.get("/users/delete",auth,async (req,res)=>
     }
   catch(e)
   {
-      console.log(e)
+    res.send("Error Occured")
   }
 })
 
@@ -100,7 +100,7 @@ router.post("/users/create",async(req,res)=>
       }
     catch(e)
     {
-        console.log(e);
+      res.send("Error Occured")
         return;
     }
 })
@@ -116,7 +116,7 @@ router.post("/users/login",async (req,res)=>
     }
     catch(e)
     {
-     console.log(e);
+     res.send({"error": "User Not Found , Please Try Again"})
     }
 })
 
@@ -136,7 +136,7 @@ router.post("/users/logout",auth,async (req,res)=>
     }
     catch(e)
     {
-     console.log(e);
+      res.send("Error Occured")
     }
 })
 
@@ -155,7 +155,7 @@ router.post("/users/logoutAll",auth,async (req,res)=>
     }
     catch(e)
     {
-     console.log(e);
+      res.send("Error Occured")
     }
 })
 
@@ -185,7 +185,7 @@ router.post("/users/update",auth,async (req,res)=>
     }
     catch(e)
     {
-        console.log(e);
+      res.send("Error Occured")
         return;
     }
 
