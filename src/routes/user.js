@@ -5,10 +5,22 @@ const auth=require("../middleware/auth")
 const jwt =require("jsonwebtoken")
 const sharp=require("sharp");
 const Emails=require("../emails/account")
+router.get("/",(req,res)=>
+{
+  res.render("index")
+})
+
 router.get("/users/me",auth,async (req,res)=>
 { 
   try{
-    res.send(req.user)
+
+    res.render("user",{
+      name:req.user.name,
+      age: req.user.age,
+      email:req.user.email
+     })
+    
+
   }
   catch(e)
   {
@@ -16,27 +28,59 @@ router.get("/users/me",auth,async (req,res)=>
   }
 })
 
-router.get("/users/:id",async (req,res)=>
-{
-  try{
-   const _id=req.params.id;  
-  const user=await User.findById(_id);
+ router.get("/users/create",(req,res)=>
+ {
+    res.render("create")
+ })
+
+ router.get("/users/login",async (req,res)=>
+ {
+     res.render("login")
+ })
+ router.post("/users/logout",auth,async (req,res)=>
+ {
+     console.log("GHekjrioe")
+     try
+     {
+   
+     req.user.tokens=req.user.tokens.filter((token)=>
+     {
+         return token.token!==req.token
+     })
+     await req.user.save()
+     req.header['authorization']=undefined
+     res.redirect("/")
+     }
+     catch(e)
+     {
+      console.log(e);
+     }
+ })
+ 
+
+
+
+// router.get("/users/:id",async (req,res)=>
+// {
+//   try{
+//    const _id=req.params.id;  
+//   const user=await User.findById(_id);
   
-  if(user)
-  res.send(user);
-  }
-  catch(e)
-  {
-      console.log(e)
-  }
-})
+//   if(user)
+//   res.send(user);
+//   }
+//   catch(e)
+//   {
+//       console.log(e)
+//   }
+// })
 
-router.delete("/users/delete/me",auth,async (req,res)=>
+router.get("/users/delete",auth,async (req,res)=>
 {
   try{
      await req.user.remove()
       Emails.sendExitEmail(req.user.email,req.user.name)
-    res.send(req.user)
+    res.redirect("/")
     }
   catch(e)
   {
@@ -50,8 +94,9 @@ router.post("/users/create",async(req,res)=>
     try{  
          const user =await new User(req.body);
          const token=await user.generateToken(user);
+         req.header['authorization']=token
          Emails.sendWelcomeEmail(user.email,user.name)
-         res.send({user,token})
+         res.redirect("/users/me")
       }
     catch(e)
     {
@@ -66,7 +111,8 @@ router.post("/users/login",async (req,res)=>
     {
     const user=await User.findByCredentials(req.body.email,req.body.password);
     const token=await user.generateToken();
-    res.send({user,token})
+    req.header['authorization']=token
+     res.redirect("/users/me")
     }
     catch(e)
     {
@@ -85,7 +131,8 @@ router.post("/users/logout",auth,async (req,res)=>
         return token.token!==req.token
     })
     await req.user.save()
-    res.send("Logout")
+    req.header['authorization']=undefined
+    res.redirect("/")
     }
     catch(e)
     {
@@ -102,7 +149,9 @@ router.post("/users/logoutAll",auth,async (req,res)=>
       console.log(req.user)
     req.user.tokens=[]
     await req.user.save()
-    res.send("Logout All")
+    req.header['authorization']=undefined
+
+    res.redirect("/")
     }
     catch(e)
     {
@@ -110,8 +159,11 @@ router.post("/users/logoutAll",auth,async (req,res)=>
     }
 })
 
-
-router.patch("/users/update/me",auth,async (req,res)=>
+router.get("/users/update",auth,async (req,res)=>
+{
+    res.render("updateUser")
+})
+router.post("/users/update",auth,async (req,res)=>
 {
   
     const updates= Object.keys(req.body);
@@ -129,7 +181,7 @@ router.patch("/users/update/me",auth,async (req,res)=>
         })
       await user.save();
     //const user = await User.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators:true})
-      res.send(user);
+      res.redirect("/users/me");
     }
     catch(e)
     {
@@ -154,43 +206,43 @@ const upload=multer({
   }
 })
 
-router.post("/users/me/upload",auth,upload.single("upload"),async (req,res)=>
-{
-    const buffer=await sharp(req.file.buffer).resize({width:250,height:250}).png().toBuffer()
-    req.user.uploads=buffer
-    await req.user.save()
-    res.send();
-},(error,req,res,next)=>
-{
-   res.status(400).send({error:error.message});
-})
+// router.post("/users/me/upload",auth,upload.single("upload"),async (req,res)=>
+// {
+//     const buffer=await sharp(req.file.buffer).resize({width:250,height:250}).png().toBuffer()
+//     req.user.uploads=buffer
+//     await req.user.save()
+//     res.send();
+// },(error,req,res,next)=>
+// {
+//    res.status(400).send({error:error.message});
+// })
 
-router.delete("/users/me/del",auth,async (req,res)=>
-{
-   req.user.uploads=undefined;
-   await req.user.save();
-   res.send("Pic Deleted")
+// router.delete("/users/me/del",auth,async (req,res)=>
+// {
+//    req.user.uploads=undefined;
+//    await req.user.save();
+//    res.send("Pic Deleted")
 
-})
+// })
 
 
-router.get("/users/:id/uploads",async (req,res)=>
-{
-    try{
-        const user=await User.findById(req.params.id)
+// router.get("/users/:id/uploads",async (req,res)=>
+// {
+//     try{
+//         const user=await User.findById(req.params.id)
        
        
-        if(!user || !user.uploads)
-        {
-          throw new Error()
-        }
-     res.set("Content-Type","image/png")
-     res.send(user.uploads)
-    }
-    catch(e)
-    {
-        res.send({error:"Invalid Request"})
-    }
-})
+//         if(!user || !user.uploads)
+//         {
+//           throw new Error()
+//         }
+//      res.set("Content-Type","image/png")
+//      res.send(user.uploads)
+//     }
+//     catch(e)
+//     {
+//         res.send({error:"Invalid Request"})
+//     }
+// })
 
 module.exports=router; 
